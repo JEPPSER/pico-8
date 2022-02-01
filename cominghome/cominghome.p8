@@ -4,6 +4,7 @@ __lua__
 function _init()
 	last = time()
 	fade_timer = 0
+	explosion = nil
 	map_setup()
 	
 	planets={}
@@ -27,6 +28,13 @@ function _update()
 	delta = time() - last
 	move_ship()
 	update_fade()
+	
+	if (explosion != nil) then
+		if (update_particle_explosion(explosion,delta)) then
+			explosion = nil
+		end
+	end
+	
 	last = time()
 end
 
@@ -46,6 +54,10 @@ function _draw()
 	
 	for key,value in pairs(asteroids) do
 		draw_asteroid(value)
+	end
+	
+	if (explosion != nil) then
+		draw_particle_explosion(explosion)
 	end
 	
 	draw_fade()
@@ -132,9 +144,17 @@ function reset_ship()
 	s.speed=0.25
 	s.planet=-1
  s.cooldown=0
+ s.death_timer=0
 end
 
 function move_ship()
+	if (s.death_timer > 0) then
+		s.death_timer -= delta
+		return
+	else
+		s.death_timer = 0
+	end
+
 	if s.planet == -1 and s.cooldown <= 0 then
 		index = planet_collision()
 		s.planet = index
@@ -170,8 +190,10 @@ function move_ship()
 	end
 	
 	asteroid_index = asteroid_collision()
-	if (fade_timer == 0 and (asteroid_index > -1)) then
-		fade_timer = 1
+	if (explosion == nil and (asteroid_index > -1)) then
+		s.death_timer = 0.7
+		explosion = make_particle_explosion(s.x,s.y,50)
+		s.x = 999
 	end
 end
 
@@ -236,6 +258,42 @@ function draw_star(s)
 	brightness = abs(2 - (ceil(2 * s.timer + 1) - 1))
 	c = 7 - brightness
 	pset(s.x,s.y,c)
+end
+-->8
+function make_particle_explosion(x,y,size)
+	particles = {}
+	for i=1,size do
+		p = {}
+		p.angle = rnd(1)
+		p.speed = rnd(0.4)
+		p.lifetime = 0.7
+		p.timer = 0
+		p.x = x
+		p.y = y
+		particles[i] = p
+	end
+	return particles
+end
+
+function update_particle_explosion(particles,delta)
+	for key,value in pairs(particles) do
+		value.timer += delta
+		if (value.timer > value.lifetime) then
+			return true
+		end
+		value.x += value.speed * cos(value.angle)
+		value.y -= value.speed * sin(value.angle)
+	end
+	return false
+end
+
+function draw_particle_explosion(particles)
+	for key,value in pairs(particles) do
+		c = 7 - flr((value.timer / value.lifetime) * 3)
+		if (c > 4) then
+			pset(value.x*8,value.y*8,c)
+		end
+	end
 end
 __gfx__
 0000000000cccc000055540000000000666666667770000000007700770000770077000000000777770000000007700000000077000000000000000000000000
