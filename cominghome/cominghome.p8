@@ -4,6 +4,7 @@ __lua__
 function _init()
 	last = time()
 	fade_timer = 0
+	resetting = false
 	explosion = nil
 	map_setup()
 	
@@ -87,7 +88,8 @@ end
 function update_fade()
 	if (fade_timer > 0) then
 		fade_timer -= delta
-		if (fade_timer < 0.5) then
+		if (fade_timer < 0.5 and not resetting) then
+			resetting = true
 			if (s.planet == -1) then
 				reset_ship()
 			else
@@ -97,6 +99,7 @@ function update_fade()
 		end
 	else
 		fade_timer = 0
+		resetting = false
 	end
 end
 
