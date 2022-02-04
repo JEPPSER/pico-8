@@ -206,7 +206,7 @@ function reset_ship()
 	s.planet=-1
  s.cooldown=0
  s.death_timer=0
- s.direction=-1
+ s.direction=1
  s.last_x=s.x
  s.last_y=s.y
 end
@@ -215,8 +215,7 @@ function calc_angle(direction)
 	planet_angle = atan2(s.y - planets[s.planet].y, s.x - planets[s.planet].x)
  length = s.speed
  v = acos(length / (2 * planets[s.planet].orbit_radius)) / 6.28328530718
- val = direction == 1 and 1.06 or -1.01
-	return normalize_angle(planet_angle + v * planets[s.planet].orbit_radius * val)
+	return normalize_angle(planet_angle + (0.25 - v * s.direction * 1.08))
 end
 
 function normalize_angle(angle)
@@ -232,15 +231,19 @@ function move_ship()
 	else
 		s.death_timer = 0
 	end
-	
-	print(s.angle)
 
 	if s.planet == -1 and s.cooldown <= 0 then
 		index = planet_collision()
 		s.planet = index
 		if s.planet > -1 then
-			org_planet_angle = atan2(planets[s.planet].y - s.last_y,planets[s.planet].x - s.last_x)
-			s.direction = org_planet_angle > s.angle and 1 or -1
+			org_planet_angle = atan2(s.last_y - planets[s.planet].y,s.last_x - planets[s.planet].x)
+			cur_planet_angle = atan2(s.y - planets[s.planet].y,s.x - planets[s.planet].x)
+			if (abs(org_planet_angle - cur_planet_angle) > 0.5) then
+				max_angle = max(org_planet_angle,cur_planet_angle)
+				org_planet_angle = normalize_angle(org_planet_angle - max_angle)
+				cur_planet_angle = normalize_angle(cur_planet_angle - max_angle)
+			end
+			s.direction = org_planet_angle > cur_planet_angle and 1 or -1
 		end
 		if s.planet == 1 then
 			fade_timer = 1
