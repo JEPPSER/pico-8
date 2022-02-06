@@ -11,15 +11,18 @@ function _init()
 	explosion = nil
 
 	map_setup()
+	//music(0)
 	
 	levels={}
 	levels[1]=level_1()
 	levels[2]=level_2()
+	levels[3]=level_3()
+	levels[4]=level_4()
 	
 	planets={}
 	asteroids={}
 	
-	level_index = 0
+	level_index = 3
 	
 	stars={}
 	for i=1,50 do
@@ -69,7 +72,13 @@ function _draw()
 		draw_particle_explosion(explosion)
 	end
 	
+	draw_fuel()
 	draw_fade()
+end
+
+function draw_fuel()
+	rectfill(127/2-8,127-4,127/2+8,127,7)
+	rectfill(127/2-7,127-3,127/2-7+14*s.fuel,127-1,8)
 end
 
 function draw_fade()
@@ -161,6 +170,46 @@ function level_2()
 	level.asteroids = asteroids
 	return level
 end
+
+function level_3()
+	planets={}
+	planets[1]=make_planet(13,15,1)
+	planets[2]=make_planet(3,13,2)
+	planets[3]=make_planet(13,6,3)
+	planets[4]=make_planet(4,4,4)
+	
+	asteroids={}
+	asteroids[1]=make_asteroid(9,2)
+	asteroids[2]=make_asteroid(9,7)
+	asteroids[3]=make_asteroid(6,8)
+	asteroids[4]=make_asteroid(7,8)
+	asteroids[5]=make_asteroid(3,10)
+	asteroids[6]=make_asteroid(4,10)
+	asteroids[7]=make_asteroid(12,12)
+	asteroids[8]=make_asteroid(13,12)
+	asteroids[9]=make_asteroid(14,12)
+
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	return level
+end
+
+function level_4()
+	planets={}
+	planets[1]=make_planet(13,8,1)
+	planets[2]=make_planet(3,8,2)
+	
+	asteroids={}
+	asteroids[1]=make_asteroid(9,7,true)
+	asteroids[2]=make_asteroid(9,8,true)
+	asteroids[3]=make_asteroid(9,9,true)
+
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	return level
+end
 -->8
 function make_ship()
 	s={}
@@ -189,9 +238,28 @@ end
 
 function asteroid_collision()
 	for key,value in pairs(asteroids) do
-		dist = distance(value.x,value.y,s.x,s.y)
-		if (dist < 1) then
-			return key
+		if (not value.broken) then
+			shot_1_dist = distance(value.x,value.y,s.shots[1].x,s.shots[1].y)
+			shot_2_dist = distance(value.x,value.y,s.shots[2].x,s.shots[2].y)
+			if (shot_1_dist < 0.7 or shot_2_dist < 0.7) then
+				if (value.breakable and s.shots[2].x != 0) then
+					value.broken = true
+					explosion = make_particle_explosion(value.x,value.y,50)
+				else
+					if (shot_1_dist < 0.7) then
+						s.shots[1].x = 64
+						s.shots[1].y = 64
+					else
+						s.shots[2].x = 64
+						s.shots[2].y = 64
+					end
+				end
+			end
+			
+			dist = distance(value.x,value.y,s.x,s.y)
+			if (dist < 1) then
+				return key
+			end
 		end
 	end
 	return -1
@@ -201,14 +269,22 @@ function reset_ship()
 	s.x=planets[count(planets)].x + 1
  s.y=planets[count(planets)].y + 1
 	s.sprite=5
-	s.angle=3.14
-	s.speed=0.25
+	s.angle=1
+	s.speed=0.2
 	s.planet=-1
+	s.fuel=1
+	s.thrust_direction=0
  s.cooldown=0
  s.death_timer=0
  s.direction=1
  s.last_x=s.x
  s.last_y=s.y
+ s.shots={}
+ s.shots[1]={x=64,y=64,angle=1,speed=0.75}
+ s.shots[2]={x=64,y=64,angle=1,speed=0.75}
+	for key,value in pairs(asteroids) do
+		value.broken = false
+	end
 end
 
 function calc_angle(direction)
@@ -264,6 +340,38 @@ function move_ship()
   s.last_y = s.y
   s.cooldown = 1
  end
+ 
+ s.thrust_direction=0
+ if (s.planet == -1) then
+ 	if (s.fuel > 0) then
+ 		if (btn(0)) then
+ 			s.angle -= 0.005
+ 			s.fuel -= 0.03
+ 			s.thrust_direction=1
+	 	end
+ 		if (btn(1)) then
+ 			s.angle += 0.005
+ 			s.fuel -= 0.03
+ 			s.thrust_direction=-1
+ 		end
+ 	else
+ 		s.fuel = 0
+ 	end
+ end
+ 
+ s.angle = normalize_angle(s.angle)
+ 
+ if (btnp(5) and s.shots[1].x == 64 and s.shots[2].x == 64) then
+ 	s.shots[1].x = s.x
+ 	s.shots[1].y = s.y
+ 	s.shots[1].angle = s.angle + 0.05
+ 	s.shots[2].x = s.x
+ 	s.shots[2].y = s.y
+ 	s.shots[2].angle = s.angle - 0.05
+ end
+ 
+ update_shot(s.shots[1])
+ update_shot(s.shots[2])
 	
 	s.x = s.x + s.speed * cos(s.angle)
 	s.y = s.y - s.speed * sin(s.angle)
@@ -280,9 +388,36 @@ function move_ship()
 	end
 end
 
+function update_shot(s)
+	if (s.x != 64) then
+ 	s.x = s.x + s.speed * cos(s.angle)
+ 	s.y = s.y - s.speed * sin(s.angle)
+ 	if (s.x > 16 or s.x < 0 or s.y < 0 or s.y > 16) then
+ 		s.x = 64
+ 		s.y = 64
+ 	end
+ end
+end
+
 function draw_ship()
+	if (s.thrust_direction != 0) then
+		a = s.angle + 0.4 * s.thrust_direction
+		x2 = s.x + cos(a) * 0.6
+		y2 = s.y - sin(a) * 0.6
+		line(s.x*8,s.y*8,x2*8,y2*8,9)
+	end
+	
  s.sprite = 18 + flr(8 * s.angle)
 	spr(s.sprite,(s.x*8) - 2,(s.y*8) - 2,0.5,0.5)
+	
+	draw_shot(s.shots[1])
+	draw_shot(s.shots[2])
+end
+
+function draw_shot(shot)
+	x2 = shot.x + cos(shot.angle)
+	y2 = shot.y - sin(shot.angle)
+	line(shot.x*8,shot.y*8,x2*8,y2*8,8)
 end
 
 
@@ -304,18 +439,22 @@ function draw_planet(p)
 	spr(p.sprite,p.x*8 - 4,p.y*8 - 4)
 end
 
-function make_asteroid(x,y)
+function make_asteroid(x,y,breakable)
 	a={}
 	a.x=x
 	a.y=y
-	a.sprite=26
 	a.width=1
 	a.height=1
+	a.breakable=breakable
+	a.broken=false
+	a.sprite=a.breakable and 27 or 26
 	return a
 end
 
 function draw_asteroid(a)
-	spr(a.sprite,a.x*8,a.y*8)
+	if (not a.broken) then
+		spr(a.sprite,a.x*8-4,a.y*8-4)
+	end
 end
 
 function make_star()
@@ -424,14 +563,14 @@ __gfx__
 007007003333c3334444445566667ff0666dd6dd0777700077777770000770000777777700077770007770007777777700077700000000000000000000000000
 000000000333c3300455445066ffff000d6ddd607777000000007777000770007777000000007777007700007777777700007700000000000000000000000000
 0000000000ccc300004444000000000000d6dd007770000000000077000770007700000000000777007700007700007700007700000000000000000000000000
-77000070007777007700000000700000700700000700000000770000770000000770000000770000000000d00000000000000000000000000000000000000000
+77000070007777007700000000700000700700000700000000770000770000000770000000770000000000d00045004000000000000000000000000000000000
 077707707770777707770000077000007777000007700000777000007777000007700000777700000dd00d5d0000000000000000000000000000000000000000
-07777777777007700777000077770000077000007777000077700000077000007777000007700000d55505d50000000000000000000000000000000000000000
-770000770077070077000000007700000770000077000000007700000700000070070000007000000d5000d00000000000000000000000000000000000000000
+07777777777007700777000077770000077000007777000077700000077000007777000007700000d55505d50400544000000000000000000000000000000000
+770000770077070077000000007700000770000077000000007700000700000070070000007000000d5000d05400440000000000000000000000000000000000
 70070700077000770000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-777707700770777700000000000000000000000000000000000000000000000000000000000000000dd555000000000000000000000000000000000000000000
-07707777777707700000000000000000000000000000000000000000000000000000000000000000dd55d5500000000000000000000000000000000000000000
-07707700700700700000000000000000000000000000000000000000000000000000000000000000055d55000000000000000000000000000000000000000000
+777707700770777700000000000000000000000000000000000000000000000000000000000000000dd555000540045000000000000000000000000000000000
+07707777777707700000000000000000000000000000000000000000000000000000000000000000dd55d5500540000000000000000000000000000000000000
+07707700700700700000000000000000000000000000000000000000000000000000000000000000055d55000000040000000000000000000000000000000000
 __label__
 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
 88888eeeeee888eeeeee888777777888eeeeee888eeeeee888888888888888888888888888888888888ff8ff8888228822888222822888888822888888228888
@@ -561,4 +700,12 @@ __label__
 82888828828282888888888288828828882888828882888888888888888888888888888888888888888888288282882882828828828288288882828888888888
 82228222828282228888822288828288822282228882888888888888888888888888888888888888888882228222822282228288822282228882822288822288
 88888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888
+
+__sfx__
+0028000014020140201402014020140201402014020140200d0200d0200d0200d0200d0200d0200d0200d02019020190201902019020190201902019020190201402014020140201402014010140101400014000
+00280000080100801008010080100801008010080100801006010060100601006010060100601006010060100d0100d0100d0100d0100d0100d0100d0100d010080100801008010080100d0100d0100d0100d010
+002800001e0201e0201e0201e0201e0201e0201e0201e0201e0201e0201e0201e0201e0201e0201e0201e0201d0201d0201d0201d0201d0201d0201d0201d0201b0201b0201b0201b0201d0201d0201e0101e010
+__music__
+00 00014244
+02 00010244
 
