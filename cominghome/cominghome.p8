@@ -18,11 +18,13 @@ function _init()
 	levels[2]=level_2()
 	levels[3]=level_3()
 	levels[4]=level_4()
+	levels[5]=level_5()
+	levels[6]=level_6()
 	
 	planets={}
 	asteroids={}
 	
-	level_index = 3
+	level_index = 0
 	
 	stars={}
 	for i=1,50 do
@@ -137,14 +139,11 @@ end
 
 function level_1()
 	planets={}
-	planets[1]=make_planet(3,3,1)
-	planets[2]=make_planet(5,13,2)
-	planets[3]=make_planet(13,10,3)
+	planets[1]=make_planet(13,8,1)
+	planets[2]=make_planet(4,8,2)
 	
 	asteroids={}
-	asteroids[1]=make_asteroid(8,8)
-	asteroids[2]=make_asteroid(8,7)
-
+	
 	level={}
 	level.planets = planets
 	level.asteroids = asteroids
@@ -152,6 +151,118 @@ function level_1()
 end
 
 function level_2()
+	planets={}
+	planets[1]=make_planet(13,8,1)
+	planets[2]=make_planet(4,8,2)
+	
+	asteroids={}
+	asteroids[1]=make_asteroid(9,7)
+	asteroids[2]=make_asteroid(9,8)
+	asteroids[3]=make_asteroid(9,9)
+	
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	return level
+end
+
+function level_3()
+	planets={}
+	planets[1]=make_planet(13,8,1)
+	planets[2]=make_planet(4,8,2)
+	
+	asteroids={}
+	asteroids[1]=make_asteroid(7,6,true)
+	asteroids[2]=make_asteroid(7,7,true)
+	asteroids[3]=make_asteroid(7,8,true)
+	asteroids[4]=make_asteroid(7,9,true)
+	
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	return level
+end
+
+function level_4()
+	planets={}
+	planets[1]=make_planet(8,3,1)
+	planets[2]=make_planet(8,14,2)
+	
+	asteroids={}
+	asteroids[1]=make_asteroid(7,10)
+	asteroids[2]=make_asteroid(8,10)
+	asteroids[3]=make_asteroid(9,10)
+	
+	asteroids[4]=make_asteroid(5,6,true)
+	asteroids[5]=make_asteroid(6,6,true)
+	asteroids[6]=make_asteroid(7,6,true)
+	asteroids[7]=make_asteroid(9,6,true)
+	asteroids[8]=make_asteroid(10,6,true)
+	asteroids[9]=make_asteroid(11,6,true)
+	
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	return level
+end
+
+function level_5()
+	planets={}
+	planets[1]=make_planet(14,5,1)
+	planets[2]=make_planet(3,3,2)
+	planets[3]=make_planet(8,14,3)
+	
+	asteroids={}
+	asteroids[1]=make_asteroid(10,1)
+	asteroids[2]=make_asteroid(9,2)
+	asteroids[3]=make_asteroid(8,3)
+	asteroids[4]=make_asteroid(7,4)
+	asteroids[5]=make_asteroid(9,7)
+	asteroids[6]=make_asteroid(10,8)
+	asteroids[7]=make_asteroid(11,9)
+	asteroids[8]=make_asteroid(12,10)
+	asteroids[9]=make_asteroid(13,11)
+	
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	return level
+end
+
+function level_6()
+	planets={}
+	planets[1]=make_planet(10,2,1)
+	planets[2]=make_planet(9,14,2)
+	planets[3]=make_planet(14,8,3)
+	planets[4]=make_planet(3,8,4)
+	
+	asteroids={}
+	asteroids[1]=make_asteroid(6,2)
+	asteroids[3]=make_asteroid(7,3)
+	asteroids[4]=make_asteroid(8,4)
+	asteroids[5]=make_asteroid(9,5)
+	asteroids[6]=make_asteroid(10,5)
+	asteroids[7]=make_asteroid(11,5)
+	asteroids[8]=make_asteroid(1,11)
+	asteroids[9]=make_asteroid(2,11)
+	asteroids[10]=make_asteroid(3,11)
+	asteroids[11]=make_asteroid(4,11)
+	asteroids[12]=make_asteroid(5,11)
+	asteroids[13]=make_asteroid(6,11)
+	asteroids[14]=make_asteroid(7,11)
+	asteroids[15]=make_asteroid(8,11)
+	asteroids[16]=make_asteroid(9,10)
+	asteroids[17]=make_asteroid(10,9)
+	asteroids[18]=make_asteroid(11,8)
+	asteroids[19]=make_asteroid(12,8)
+	
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	return level
+end
+
+function level_22()
 	planets={}
 	planets[1]=make_planet(10,3,1)
 	planets[2]=make_planet(3,3,2)
@@ -171,7 +282,7 @@ function level_2()
 	return level
 end
 
-function level_3()
+function level_32()
 	planets={}
 	planets[1]=make_planet(13,15,1)
 	planets[2]=make_planet(3,13,2)
@@ -195,7 +306,7 @@ function level_3()
 	return level
 end
 
-function level_4()
+function level_42()
 	planets={}
 	planets[1]=make_planet(13,8,1)
 	planets[2]=make_planet(3,8,2)
@@ -307,6 +418,8 @@ function move_ship()
 	else
 		s.death_timer = 0
 	end
+	
+	printh(s.y)
 
 	if s.planet == -1 and s.cooldown <= 0 then
 		index = planet_collision()
@@ -384,7 +497,7 @@ function move_ship()
 	if (explosion == nil and (asteroid_index > -1)) then
 		s.death_timer = 0.7
 		explosion = make_particle_explosion(s.x,s.y,50)
-		s.x = 999
+		s.x = 64
 	end
 end
 
@@ -401,7 +514,7 @@ end
 
 function draw_ship()
 	if (s.thrust_direction != 0) then
-		a = s.angle + 0.4 * s.thrust_direction
+		a = s.angle + 0.45 * s.thrust_direction
 		x2 = s.x + cos(a) * 0.6
 		y2 = s.y - sin(a) * 0.6
 		line(s.x*8,s.y*8,x2*8,y2*8,9)
