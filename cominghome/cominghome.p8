@@ -20,6 +20,8 @@ function _init()
 	levels[4]=level_4()
 	levels[5]=level_5()
 	levels[6]=level_6()
+	levels[7]=level_7()
+	levels[8]=level_8()
 	
 	planets={}
 	asteroids={}
@@ -185,20 +187,18 @@ end
 
 function level_4()
 	planets={}
-	planets[1]=make_planet(8,3,1)
-	planets[2]=make_planet(8,14,2)
+	planets[1]=make_planet(13,13,1)
+	planets[2]=make_planet(6,8,2)
+	planets[3]=make_planet(5,13,3)
 	
 	asteroids={}
-	asteroids[1]=make_asteroid(7,10)
-	asteroids[2]=make_asteroid(8,10)
-	asteroids[3]=make_asteroid(9,10)
-	
-	asteroids[4]=make_asteroid(5,6,true)
-	asteroids[5]=make_asteroid(6,6,true)
-	asteroids[6]=make_asteroid(7,6,true)
-	asteroids[7]=make_asteroid(9,6,true)
-	asteroids[8]=make_asteroid(10,6,true)
-	asteroids[9]=make_asteroid(11,6,true)
+	asteroids[1]=make_asteroid(9,9)
+	asteroids[2]=make_asteroid(9,10)
+	asteroids[3]=make_asteroid(9,11)
+	asteroids[4]=make_asteroid(9,12)
+	asteroids[5]=make_asteroid(9,13)
+	asteroids[6]=make_asteroid(9,14)
+	asteroids[7]=make_asteroid(9,15)
 	
 	level={}
 	level.planets = planets
@@ -207,6 +207,26 @@ function level_4()
 end
 
 function level_5()
+	planets={}
+	planets[1]=make_planet(13,10,1)
+	planets[2]=make_planet(4,4,2)
+	planets[3]=make_planet(4,9,3)
+
+	asteroids={}
+	asteroids[1]=make_asteroid(9,11)
+	asteroids[2]=make_asteroid(10,10)
+	asteroids[3]=make_asteroid(11,9)
+	asteroids[4]=make_asteroid(12,8)
+	asteroids[5]=make_asteroid(13,7)
+	asteroids[6]=make_asteroid(14,6)
+	
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	return level
+end
+
+function level_6()
 	planets={}
 	planets[1]=make_planet(14,5,1)
 	planets[2]=make_planet(3,3,2)
@@ -229,7 +249,7 @@ function level_5()
 	return level
 end
 
-function level_6()
+function level_7()
 	planets={}
 	planets[1]=make_planet(10,2,1)
 	planets[2]=make_planet(9,14,2)
@@ -255,6 +275,29 @@ function level_6()
 	asteroids[17]=make_asteroid(10,9)
 	asteroids[18]=make_asteroid(11,8)
 	asteroids[19]=make_asteroid(12,8)
+	
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	return level
+end
+
+function level_8()
+	planets={}
+	planets[1]=make_planet(8,3,1)
+	planets[2]=make_planet(8,14,2)
+	
+	asteroids={}
+	asteroids[1]=make_asteroid(7,10)
+	asteroids[2]=make_asteroid(8,10)
+	asteroids[3]=make_asteroid(9,10)
+	
+	asteroids[4]=make_asteroid(5,6,true)
+	asteroids[5]=make_asteroid(6,6,true)
+	asteroids[6]=make_asteroid(7,6,true)
+	asteroids[7]=make_asteroid(9,6,true)
+	asteroids[8]=make_asteroid(10,6,true)
+	asteroids[9]=make_asteroid(11,6,true)
 	
 	level={}
 	level.planets = planets
@@ -418,8 +461,6 @@ function move_ship()
 	else
 		s.death_timer = 0
 	end
-	
-	printh(s.y)
 
 	if s.planet == -1 and s.cooldown <= 0 then
 		index = planet_collision()
@@ -451,7 +492,7 @@ function move_ship()
   s.planet = -1
   s.last_x = s.x
   s.last_y = s.y
-  s.cooldown = 1
+  s.cooldown = 0.5
  end
  
  s.thrust_direction=0
