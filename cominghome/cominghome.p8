@@ -22,6 +22,7 @@ function _init()
 	levels[6]=level_6()
 	levels[7]=level_7()
 	levels[8]=level_8()
+	levels[9]=level_9()
 	
 	planets={}
 	asteroids={}
@@ -298,6 +299,43 @@ function level_8()
 	asteroids[7]=make_asteroid(9,6,true)
 	asteroids[8]=make_asteroid(10,6,true)
 	asteroids[9]=make_asteroid(11,6,true)
+	
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	return level
+end
+
+function level_9()
+	planets={}
+	planets[1]=make_planet(4,4,1)
+	planets[2]=make_planet(14,13,2)
+	planets[3]=make_planet(13,5,3)
+	planets[4]=make_planet(4,13,4)
+	
+	asteroids={}
+	asteroids[1]=make_asteroid(3,7)
+	asteroids[2]=make_asteroid(4,7)
+	asteroids[3]=make_asteroid(10,5)
+	asteroids[4]=make_asteroid(5,8)
+	asteroids[5]=make_asteroid(5,9)
+	asteroids[6]=make_asteroid(4,10)
+	asteroids[7]=make_asteroid(10,6)
+	asteroids[8]=make_asteroid(10,7)
+	asteroids[9]=make_asteroid(11,12)
+	asteroids[10]=make_asteroid(11,13)
+	asteroids[11]=make_asteroid(11,14)
+	asteroids[12]=make_asteroid(10,4)
+	asteroids[13]=make_asteroid(11,3)
+	
+	asteroids[14]=make_asteroid(7,7,true)
+	asteroids[15]=make_asteroid(8,7,true)
+	
+	asteroids[16]=make_asteroid(2,7)
+	asteroids[17]=make_asteroid(1,8)
+	asteroids[18]=make_asteroid(1,9)
+	asteroids[19]=make_asteroid(2,10)
+	asteroids[20]=make_asteroid(3,10)
 	
 	level={}
 	level.planets = planets
