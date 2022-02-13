@@ -24,9 +24,12 @@ function _init()
 	levels[8]=level_8()
 	levels[9]=level_9()
 	levels[10]=level_10()
+	levels[11]=level_11()
+	levels[12]=level_12()
 	
 	planets={}
 	asteroids={}
+	mirrors={}
 	
 	level_index = 0
 	
@@ -72,6 +75,12 @@ function _draw()
 	
 	for key,value in pairs(asteroids) do
 		draw_asteroid(value)
+	end
+	
+	if (mirrors != nil) then
+		for key,value in pairs(mirrors) do
+			draw_mirror(value)
+		end
 	end
 	
 	if (explosion != nil) then
@@ -132,6 +141,7 @@ function next_level()
 	end
 	planets=levels[level_index].planets
 	asteroids=levels[level_index].asteroids
+	mirrors=levels[level_index].mirrors
 end
 -->8
 function map_setup()
@@ -286,20 +296,28 @@ end
 
 function level_8()
 	planets={}
-	planets[1]=make_planet(8,3,1)
-	planets[2]=make_planet(8,14,2)
+	planets[1]=make_planet(7,5,1)
+	planets[2]=make_planet(14,14,2)
+	planets[3]=make_planet(4,14,3)
 	
 	asteroids={}
-	asteroids[1]=make_asteroid(7,10)
-	asteroids[2]=make_asteroid(8,10)
-	asteroids[3]=make_asteroid(9,10)
-	
-	asteroids[4]=make_asteroid(5,6,true)
-	asteroids[5]=make_asteroid(6,6,true)
-	asteroids[6]=make_asteroid(7,6,true)
-	asteroids[7]=make_asteroid(9,6,true)
-	asteroids[8]=make_asteroid(10,6,true)
-	asteroids[9]=make_asteroid(11,6,true)
+	asteroids[1]=make_asteroid(2,10)
+	asteroids[2]=make_asteroid(3,9)
+	asteroids[3]=make_asteroid(4,9)
+	asteroids[4]=make_asteroid(5,9)
+	asteroids[5]=make_asteroid(6,10)
+	asteroids[6]=make_asteroid(70,10)
+	asteroids[7]=make_asteroid(8,10,true)
+	asteroids[8]=make_asteroid(90,10,true)
+	asteroids[9]=make_asteroid(10,9)
+	asteroids[10]=make_asteroid(11,8)
+	asteroids[11]=make_asteroid(12,7)
+	asteroids[12]=make_asteroid(13,7)
+	asteroids[13]=make_asteroid(14,6)
+	asteroids[14]=make_asteroid(15,6)
+	asteroids[15]=make_asteroid(7,11)
+	asteroids[16]=make_asteroid(10,11)
+	asteroids[17]=make_asteroid(10,10)
 	
 	level={}
 	level.planets = planets
@@ -370,6 +388,57 @@ function level_10()
 	level={}
 	level.planets = planets
 	level.asteroids = asteroids
+	return level
+end
+
+function level_11()
+	planets={}
+	planets[1]=make_planet(8,4,1)
+	planets[2]=make_planet(8,13,2)
+
+	asteroids={}
+	asteroids[1]=make_asteroid(7,9)
+	asteroids[2]=make_asteroid(8,9)
+	asteroids[3]=make_asteroid(9,9)
+	asteroids[4]=make_asteroid(6,6,true)
+	asteroids[5]=make_asteroid(7,6,true)
+	
+	mirrors={}
+	mirrors[1]=make_mirror(4,9,0.2)
+	
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	level.mirrors = mirrors
+	return level
+end
+
+function level_12()
+	planets={}
+	planets[1]=make_planet(11,4,1)
+	planets[2]=make_planet(11,12,2)
+	planets[3]=make_planet(3,12,3)
+
+	asteroids={}
+	asteroids[1]=make_asteroid(2,9)
+	asteroids[2]=make_asteroid(3,9)
+	asteroids[3]=make_asteroid(4,9)
+	asteroids[4]=make_asteroid(5,9)
+	asteroids[5]=make_asteroid(6,9)
+	asteroids[6]=make_asteroid(9,9)
+	asteroids[7]=make_asteroid(10,9)
+	asteroids[8]=make_asteroid(11,9)
+	asteroids[9]=make_asteroid(12,8)
+	asteroids[10]=make_asteroid(13,6,true)
+	asteroids[11]=make_asteroid(9,6)
+	
+	mirrors={}
+	mirrors[1]=make_mirror(8,7,0.35)
+	
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	level.mirrors = mirrors
 	return level
 end
 
@@ -586,10 +655,10 @@ function move_ship()
  if (btnp(5) and s.shots[1].x == 64 and s.shots[2].x == 64) then
  	s.shots[1].x = s.x
  	s.shots[1].y = s.y
- 	s.shots[1].angle = s.angle + 0.05
+ 	s.shots[1].angle = s.angle + 0.25
  	s.shots[2].x = s.x
  	s.shots[2].y = s.y
- 	s.shots[2].angle = s.angle - 0.05
+ 	s.shots[2].angle = s.angle - 0.25
  end
  
  update_shot(s.shots[1])
@@ -614,11 +683,43 @@ function update_shot(s)
 	if (s.x != 64) then
  	s.x = s.x + s.speed * cos(s.angle)
  	s.y = s.y - s.speed * sin(s.angle)
+ 	
+ 	x2 = s.x + cos(s.angle)
+ 	y2 = s.y - sin(s.angle)
+ 	
+ 	mirror_collision(s)
+ 	
  	if (s.x > 16 or s.x < 0 or s.y < 0 or s.y > 16) then
  		s.x = 64
  		s.y = 64
  	end
  end
+end
+
+function mirror_collision(s)
+	if (mirrors) then
+ 	for key,value in pairs(mirrors) do
+ 		m_x2 = value.x + cos(value.angle) * 2
+ 		m_y2 = value.y - sin(value.angle) * 2
+ 		a={x=value.x,y=value.y}
+ 		b={x=m_x2,y=m_y2}
+ 		c={x=s.x,y=s.y}
+ 		d={x=x2,y=y2}
+ 		if (lines_intersect(a,b,c,d)) then
+ 			v=value.angle-s.angle
+ 			u=0.5-2*v
+ 			s.angle += 0.5 - u
+ 		end
+ 	end
+ end
+end
+
+function ccw(a,b,c)
+	return (c.y-a.y) * (b.x-a.x) > (b.y-a.y) * (c.x-a.x)
+end
+
+function lines_intersect(a,b,c,d)
+	return ccw(a,c,d) != ccw(b,c,d) and ccw(a,b,c) != ccw(a,b,d)
 end
 
 function draw_ship()
@@ -631,6 +732,14 @@ function draw_ship()
 	
  s.sprite = 18 + flr(8 * s.angle)
 	spr(s.sprite,(s.x*8) - 2,(s.y*8) - 2,0.5,0.5)
+	
+	sx1 = s.x + cos(s.angle+0.25)*1.5
+	sy1 = s.y - sin(s.angle+0.25)*1.5
+	sx2 = s.x + cos(s.angle-0.25)*1.5
+	sy2 = s.y - sin(s.angle-0.25)*1.5
+	
+	pset(sx1*8,sy1*8,5)
+	pset(sx2*8,sy2*8,5)
 	
 	draw_shot(s.shots[1])
 	draw_shot(s.shots[2])
@@ -702,6 +811,20 @@ function draw_star(s)
 	brightness = abs(2 - (ceil(2 * s.timer + 1) - 1))
 	c = 7 - brightness
 	pset(s.x,s.y,c)
+end
+
+function make_mirror(x,y,angle)
+	mirror={}
+	mirror.x=x
+	mirror.y=y
+	mirror.angle=angle
+	return mirror
+end
+
+function draw_mirror(s)
+	x2 = s.x + cos(s.angle) * 2
+	y2 = s.y - sin(s.angle) * 2
+	line(s.x*8,s.y*8,x2*8,y2*8,7)
 end
 -->8
 function make_particle_explosion(x,y,size)
