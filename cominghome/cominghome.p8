@@ -2,146 +2,25 @@ pico-8 cartridge // http://www.pico-8.com
 version 34
 __lua__
 function _init()
-	last = time()
-	fade_timer = 0
-	resetting = false
-	
-	shooting_star = {}
-	reset_shooting_star(shooting_star)
-	explosion = nil
-
-	map_setup()
-	//music(0)
-	
-	levels={}
-	levels[1]=level_1()
-	levels[2]=level_2()
-	levels[3]=level_3()
-	levels[4]=level_4()
-	levels[5]=level_5()
-	levels[6]=level_6()
-	levels[7]=level_7()
-	levels[8]=level_8()
-	levels[9]=level_9()
-	levels[10]=level_10()
-	levels[11]=level_11()
-	levels[12]=level_12()
-	
-	planets={}
-	asteroids={}
-	mirrors={}
-	
-	level_index = 0
-	
-	stars={}
-	for i=1,50 do
-		stars[i]=make_star()
-	end
-	
-	next_level()
-	make_ship()
+	current_state=1
+	menu_init()
+	game_init()
 end
 
 function _update()
-	delta = time() - last
-	move_ship()
-	update_fade()
-	update_shooting_star(shooting_star,delta)
-	
-	if (explosion != nil) then
-		if (update_particle_explosion(explosion,delta)) then
-			explosion = nil
-		end
+	if (current_state == 1) then
+		menu_update()
+	elseif (current_state == 2) then
+		game_update()
 	end
-	
-	last = time()
 end
 
 function _draw()
-	cls()
-	draw_map()
-
-	for key,value in pairs(stars) do
-		draw_star(value)
+	if (current_state == 1) then
+		menu_draw()
+	elseif (current_state == 2) then
+		game_draw()
 	end
-	
-	draw_shooting_star(shooting_star)
-	
-	draw_ship()
-	
-	for key,value in pairs(planets) do
-		draw_planet(value)
-	end
-	
-	for key,value in pairs(asteroids) do
-		draw_asteroid(value)
-	end
-	
-	if (mirrors != nil) then
-		for key,value in pairs(mirrors) do
-			draw_mirror(value)
-		end
-	end
-	
-	if (explosion != nil) then
-		draw_particle_explosion(explosion)
-	end
-	
-	draw_fuel()
-	draw_fade()
-end
-
-function draw_fuel()
-	rectfill(127/2-8,127-4,127/2+8,127,7)
-	rectfill(127/2-7,127-3,127/2-7+14*s.fuel,127-1,8)
-end
-
-function draw_fade()
-	if (fade_timer <= 0) then
-		return
-	end
-	width = 127 - (127 * abs(0.5 - fade_timer) * 2)
-	if (fade_timer > 0.5) then
-		for x=0,width do
-			for y=0,127 do
-				pset(x,y,0)
-			end
-		end
-	else
-		for x=127-width,127 do
-			for y=0,127 do
-				pset(x,y,0)
-			end
-		end
-	end
-end
-
-function update_fade()
-	if (fade_timer > 0) then
-		fade_timer -= delta
-		if (fade_timer < 0.5 and not resetting) then
-			resetting = true
-			if (s.planet == -1) then
-				reset_ship()
-			else
-				next_level()
-				reset_ship()
-			end
-		end
-	else
-		fade_timer = 0
-		resetting = false
-	end
-end
-
-function next_level()
-	level_index += 1
-	if (level_index > count(levels)) then
-		return
-	end
-	planets=levels[level_index].planets
-	asteroids=levels[level_index].asteroids
-	mirrors=levels[level_index].mirrors
 end
 -->8
 function map_setup()
@@ -393,6 +272,33 @@ end
 
 function level_11()
 	planets={}
+	planets[1]=make_planet(13,8,1)
+	planets[2]=make_planet(4,8,2)
+
+	asteroids={}
+	asteroids[1]=make_asteroid(9,7)
+	asteroids[2]=make_asteroid(9,8)
+	asteroids[3]=make_asteroid(9,9)
+	asteroids[4]=make_asteroid(11,7,true)
+	asteroids[5]=make_asteroid(11,8,true)
+	asteroids[6]=make_asteroid(11,9,true)
+	asteroids[7]=make_asteroid(11,10,true)
+	asteroids[8]=make_asteroid(11,6,true)
+	
+	mirrors={}
+	mirrors[1]=make_mirror(4.2,3,0.37)
+	mirrors[2]=make_mirror(11,3,0.125)
+	mirrors[3]=make_mirror(14,4,0.2)
+	
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	level.mirrors = mirrors
+	return level
+end
+
+function level_12()
+	planets={}
 	planets[1]=make_planet(8,4,1)
 	planets[2]=make_planet(8,13,2)
 
@@ -413,7 +319,7 @@ function level_11()
 	return level
 end
 
-function level_12()
+function level_13()
 	planets={}
 	planets[1]=make_planet(11,4,1)
 	planets[2]=make_planet(11,12,2)
@@ -434,6 +340,56 @@ function level_12()
 	
 	mirrors={}
 	mirrors[1]=make_mirror(8,7,0.35)
+	
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	level.mirrors = mirrors
+	return level
+end
+
+function level_14()
+	planets={}
+	planets[1]=make_planet(8,4,1)
+	planets[2]=make_planet(8,13,2)
+
+	asteroids={}
+	asteroids[1]=make_asteroid(5,9)
+	asteroids[2]=make_asteroid(6,9)
+	asteroids[3]=make_asteroid(7,9)
+	asteroids[4]=make_asteroid(8,9)
+	asteroids[5]=make_asteroid(9,9)
+	asteroids[6]=make_asteroid(10,9)
+	asteroids[7]=make_asteroid(11,9)
+	
+	mirrors={}
+	mirrors[1]=make_mirror(15,11.5,0.37)
+	mirrors[2]=make_mirror(12.5,2,0.125)
+	
+	level={}
+	level.planets = planets
+	level.asteroids = asteroids
+	level.mirrors = mirrors
+	return level
+end
+
+function level_15()
+	planets={}
+	planets[1]=make_planet(13,11,1)
+	planets[2]=make_planet(4,11,2)
+
+	asteroids={}
+	asteroids[1]=make_asteroid(11,10,true)
+	asteroids[2]=make_asteroid(11,11,true)
+	asteroids[3]=make_asteroid(11,12,true)
+	asteroids[4]=make_asteroid(8,10)
+	asteroids[5]=make_asteroid(8,11)
+	asteroids[6]=make_asteroid(8,12)
+	asteroids[7]=make_asteroid(11,9,true)
+	asteroids[8]=make_asteroid(11,13,true)
+	
+	mirrors={}
+	mirrors[1]=make_mirror(10,5,0.17)
 	
 	level={}
 	level.planets = planets
@@ -650,6 +606,8 @@ function move_ship()
  	end
  end
  
+ mirror_collision(s)
+ 
  s.angle = normalize_angle(s.angle)
  
  if (btnp(5) and s.shots[1].x == 64 and s.shots[2].x == 64) then
@@ -672,7 +630,7 @@ function move_ship()
 	end
 	
 	asteroid_index = asteroid_collision()
-	if (explosion == nil and (asteroid_index > -1)) then
+	if (asteroid_index > -1) then
 		s.death_timer = 0.7
 		explosion = make_particle_explosion(s.x,s.y,50)
 		s.x = 64
@@ -683,9 +641,6 @@ function update_shot(s)
 	if (s.x != 64) then
  	s.x = s.x + s.speed * cos(s.angle)
  	s.y = s.y - s.speed * sin(s.angle)
- 	
- 	x2 = s.x + cos(s.angle)
- 	y2 = s.y - sin(s.angle)
  	
  	mirror_collision(s)
  	
@@ -698,6 +653,9 @@ end
 
 function mirror_collision(s)
 	if (mirrors) then
+		x2 = s.x + cos(s.angle)
+ 	y2 = s.y - sin(s.angle)
+ 	
  	for key,value in pairs(mirrors) do
  		m_x2 = value.x + cos(value.angle) * 2
  		m_y2 = value.y - sin(value.angle) * 2
@@ -898,6 +856,224 @@ function draw_shooting_star(s)
 	x2 = x1 + cos(s.angle) * 10
 	y2 = y1 + sin(s.angle) * 10
 	line(x1,y1,x2,y2,c)
+end
+-->8
+function game_init()
+	last = time()
+	fade_timer = 0
+	resetting = false
+	
+	shooting_star = {}
+	reset_shooting_star(shooting_star)
+	explosion = nil
+
+	map_setup()
+	//music(0)
+	
+	levels={}
+	levels[1]=level_1()
+	levels[2]=level_2()
+	levels[3]=level_3()
+	levels[4]=level_4()
+	levels[5]=level_5()
+	levels[6]=level_6()
+	levels[7]=level_7()
+	levels[8]=level_8()
+	levels[9]=level_9()
+	levels[10]=level_10()
+	levels[11]=level_11()
+	levels[12]=level_12()
+	levels[13]=level_13()
+	levels[14]=level_14()
+	levels[15]=level_15()
+	
+	planets={}
+	asteroids={}
+	mirrors={}
+	
+	level_index = 0
+	
+	stars={}
+	for i=1,50 do
+		stars[i]=make_star()
+	end
+	
+	next_level()
+	make_ship()
+end
+
+function game_update()
+	delta = time() - last
+	move_ship()
+	update_fade()
+	update_shooting_star(shooting_star,delta)
+	
+	if (explosion != nil) then
+		if (update_particle_explosion(explosion,delta)) then
+			explosion = nil
+		end
+	end
+	
+	last = time()
+end
+
+function game_draw()
+	cls()
+	draw_map()
+
+	for key,value in pairs(stars) do
+		draw_star(value)
+	end
+	
+	draw_shooting_star(shooting_star)
+	
+	draw_ship()
+	
+	for key,value in pairs(planets) do
+		draw_planet(value)
+	end
+	
+	for key,value in pairs(asteroids) do
+		draw_asteroid(value)
+	end
+	
+	if (mirrors != nil) then
+		for key,value in pairs(mirrors) do
+			draw_mirror(value)
+		end
+	end
+	
+	if (explosion != nil) then
+		draw_particle_explosion(explosion)
+	end
+	
+	draw_fuel()
+	draw_fade()
+end
+
+function draw_fuel()
+	rectfill(127/2-8,127-4,127/2+8,127,7)
+	rectfill(127/2-7,127-3,127/2-7+14*s.fuel,127-1,8)
+end
+
+function draw_fade()
+	if (fade_timer <= 0) then
+		return
+	end
+	width = 127 - (127 * abs(0.5 - fade_timer) * 2)
+	if (fade_timer > 0.5) then
+		for x=0,width do
+			for y=0,127 do
+				pset(x,y,0)
+			end
+		end
+	else
+		for x=127-width,127 do
+			for y=0,127 do
+				pset(x,y,0)
+			end
+		end
+	end
+end
+
+function update_fade()
+	if (fade_timer > 0) then
+		fade_timer -= delta
+		if (fade_timer < 0.5 and not resetting) then
+			resetting = true
+			if (s.planet == 1) then
+				next_level()
+				reset_ship()
+			else
+				reset_ship()
+			end
+		end
+	else
+		fade_timer = 0
+		resetting = false
+	end
+end
+
+function next_level()
+	level_index += 1
+	if (level_index > count(levels)) then
+		return
+	end
+	planets=levels[level_index].planets
+	asteroids=levels[level_index].asteroids
+	mirrors=levels[level_index].mirrors
+end
+-->8
+function menu_init()
+	current_button=1
+	
+	buttons={}
+	for i=1,15 do
+		buttons[i]={
+			text=tostring(i),
+			x=17+(((i-1)%8)%2)*50,
+			y=10+flr(((i-1)%8)/2)*30,
+			w=40,
+			h=20
+		}
+	end
+end
+
+function menu_update()
+	new_index=current_button
+	
+	if (btnp(0)) then
+		if (new_index%2 == 1) then
+			new_index -= 7
+		else
+			new_index -= 1
+		end
+	elseif (btnp(1)) then
+		if (new_index%2 == 1) then
+			new_index += 1
+		else
+			new_index += 7
+		end
+	elseif (btnp(2) and new_index%8 != 1 and new_index%8 != 2) then
+		new_index -= 2
+	elseif (btnp(3) and new_index%8 != 7 and new_index%8 != 0) then
+		new_index += 2
+	end
+	
+	if (new_index > 0 and new_index < 16) then
+		current_button = new_index
+	end
+	
+	if (btnp(4)) then
+		fade_timer=1
+		level_index=current_button-1
+		next_level()
+		current_state=2
+	end
+end
+
+function menu_draw()
+	cls()
+	if (current_button < 9) then
+		for i=1,8 do
+			draw_button(buttons[i],i)
+		end
+	elseif (current_button < 16) then
+		for i=9,15 do
+			draw_button(buttons[i],i)
+		end
+	end
+end
+
+function draw_button(b,index)
+	text_width=4*#b.text
+	if (index == current_button) then
+		rectfill(b.x,b.y,b.x+b.w,b.y+b.h,7)
+		print(b.text,b.x+b.w/2-text_width/2,b.y+b.h/2-2,0)
+	else
+		rect(b.x,b.y,b.x+b.w,b.y+b.h,7)
+		print(b.text,b.x+b.w/2-text_width/2,b.y+b.h/2-2,7)
+	end
 end
 __gfx__
 0000000000cccc00005554000000000000dddd007770000000007700770000770077000000000777770000000007700000000077000000000000000000000000
